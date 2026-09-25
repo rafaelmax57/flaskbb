@@ -16,14 +16,14 @@ def test_topic_init_com_user(default_settings, user):
 
 
 def test_topic_init_com_content():
-    # quando passa o content o Topic ja cria o primeiro post
+    # quando passa o content o Topic já cria o primeiro post
     topic = Topic(title="Meu topico", content="Conteudo do primeiro post")
 
     assert topic._post.content == "Conteudo do primeiro post"
 
 
 def test_topic_init_sem_argumentos():
-    # sem nada não pode dar erro, e as duas datas tem que ser iguais
+    # sem nada não pode dar erro, e as duas datas têm que ser iguais
     topic = Topic()
 
     assert topic.date_created == topic.last_updated
@@ -34,7 +34,7 @@ def test_is_first_post_verdadeiro(topic):
 
 
 def test_is_first_post_falso(topic):
-    # post que acabou de ser criado ainda nao tem id
+    # post que acabou de ser criado ainda não tem id
     outro_post = Post(content="Outro post")
 
     assert not topic.is_first_post(outro_post)
@@ -60,7 +60,7 @@ def test_get_forum_inexistente_da_404_guest(default_settings, guest):
 
 
 # tarefa 1.4 - teste parametrizado
-# os dois últimos são titulos invalidos, só com pontuação, e o slug fica vazio
+# os dois últimos são títulos inválidos, só com pontuação, e o slug fica vazio
 @pytest.mark.parametrize(
     "titulo, slug_esperado",
     [

@@ -56,5 +56,5 @@ def database():
 
     db.drop_all()
     db.session.close()
-    # limpa o cache, senao o Setting.as_dict() de um teste passa pro proximo
+    # limpa o cache, senão o Setting.as_dict() de um teste passa pro próximo
     cache.clear()
