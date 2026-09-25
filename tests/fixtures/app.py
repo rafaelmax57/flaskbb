@@ -2,7 +2,7 @@ import pytest
 
 from flaskbb import create_app
 from flaskbb.configs.testing import TestingConfig as Config
-from flaskbb.extensions import db
+from flaskbb.extensions import cache, db
 from flaskbb.utils.populate import create_default_groups, create_default_settings
 
 
@@ -56,3 +56,5 @@ def database():
 
     db.drop_all()
     db.session.close()
+    # limpa o cache, senao o Setting.as_dict() de um teste passa pro proximo
+    cache.clear()
