@@ -1204,34 +1204,7 @@ class Forum(db.Model, CRUDMixin):
                 days=flaskbb_config["TRACKER_LENGTH"]
             )
 
-        # fetch the unread posts in the forum
-        unread_count = db.session.execute(
-            db.select(db.func.count())
-            .select_from(Topic)
-            .outerjoin(
-                TopicsRead,
-                db.and_(TopicsRead.topic_id == Topic.id, TopicsRead.user_id == user.id),
-            )
-            .outerjoin(
-                ForumsRead,
-                db.and_(
-                    ForumsRead.forum_id == Topic.forum_id,
-                    ForumsRead.user_id == user.id,
-                ),
-            )
-            .filter(
-                Topic.forum_id == self.id,
-                Topic.last_updated > read_cutoff,
-                db.or_(
-                    TopicsRead.last_read.is_(None),
-                    TopicsRead.last_read < Topic.last_updated,
-                ),
-                db.or_(
-                    ForumsRead.last_read.is_(None),
-                    ForumsRead.last_read < Topic.last_updated,
-                ),
-            )
-        ).scalar_one()
+        unread_count = self._count_unread_topics(user, read_cutoff)
 
         # No unread topics available - trying to mark the forum as read
         if unread_count == 0:
@@ -1271,6 +1244,36 @@ class Forum(db.Model, CRUDMixin):
             )
         )
         return False
+
+    def _count_unread_topics(self, user: "User", read_cutoff: datetime | None):
+        """Counts the topics in this forum that the user hasn't read yet."""
+        return db.session.execute(
+            db.select(db.func.count())
+            .select_from(Topic)
+            .outerjoin(
+                TopicsRead,
+                db.and_(TopicsRead.topic_id == Topic.id, TopicsRead.user_id == user.id),
+            )
+            .outerjoin(
+                ForumsRead,
+                db.and_(
+                    ForumsRead.forum_id == Topic.forum_id,
+                    ForumsRead.user_id == user.id,
+                ),
+            )
+            .filter(
+                Topic.forum_id == self.id,
+                Topic.last_updated > read_cutoff,
+                db.or_(
+                    TopicsRead.last_read.is_(None),
+                    TopicsRead.last_read < Topic.last_updated,
+                ),
+                db.or_(
+                    ForumsRead.last_read.is_(None),
+                    ForumsRead.last_read < Topic.last_updated,
+                ),
+            )
+        ).scalar_one()
 
     def recalculate(self, last_post: bool = False):
         """Recalculates the post_count and topic_count in the forum.
