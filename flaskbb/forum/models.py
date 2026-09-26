@@ -756,21 +756,16 @@ class Topic(HideableCRUDMixin, db.Model):
         if not self.tracker_needs_update(forumsread, topicsread):
             return False
 
-        # Because we return True/False if the trackers have been
-        # updated, we need to store the status in a temporary variable
-        updated = False
-
         # A new post has been submitted that the user hasn't read.
         # Updating...
         if topicsread:
             logger.debug("Updating existing TopicsRead '{}' object.".format(topicsread))
             topicsread.last_read = time_utcnow()
             topicsread.save()
-            updated = True
 
         # The user has not visited the topic before. Inserting him in
         # the TopicsRead model.
-        elif not topicsread:
+        else:
             logger.debug("Creating new TopicsRead object.")
             topicsread = TopicsRead()
             topicsread.user = user
@@ -778,16 +773,9 @@ class Topic(HideableCRUDMixin, db.Model):
             topicsread.forum = self.forum
             topicsread.last_read = time_utcnow()
             topicsread.save()
-            updated = True
 
-        # No unread posts
-        else:
-            updated = False
-
-        # Save True/False if the forums tracker has been updated.
-        updated = forum.update_read(user, forumsread, topicsread)
-
-        return updated
+        # Returns True/False if the forums tracker has been updated.
+        return forum.update_read(user, forumsread, topicsread)
 
     def recalculate(self):
         """Recalculates the post count in the topic."""
