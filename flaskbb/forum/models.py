@@ -373,7 +373,7 @@ class Post(HideableCRUDMixin, db.Model):
             self.topic.hide(user)
             return self
 
-        super(Post, self).hide(user)
+        super().hide(user)
         self._deal_with_last_post()
         self._update_counts()
         db.session.commit()
@@ -389,7 +389,7 @@ class Post(HideableCRUDMixin, db.Model):
             return self
 
         self._restore_post_to_topic()
-        super(Post, self).unhide()
+        super().unhide()
         self._update_counts()
         db.session.commit()
         return self
@@ -901,7 +901,7 @@ class Topic(HideableCRUDMixin, db.Model):
 
         involved_users = self.involved_users()
         self._remove_topic_from_forum()
-        super(Topic, self).hide(user)
+        super().hide(user)
         self._handle_first_post()
         self._fix_user_post_counts(involved_users)
         self._fix_post_counts(self.forum)
@@ -914,7 +914,7 @@ class Topic(HideableCRUDMixin, db.Model):
             return
 
         involved_users = self.involved_users()
-        super(Topic, self).unhide()
+        super().unhide()
         self._handle_first_post()
         self._restore_topic_to_forum()
         self._fix_user_post_counts(involved_users)
