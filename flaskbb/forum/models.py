@@ -395,6 +395,16 @@ class Post(HideableCRUDMixin, db.Model):
         return self
 
     def _deal_with_last_post(self):
+        """Fixes the last post of the topic and of the forum when this post
+        is going to be deleted or hidden. It has to be called before the post
+        is removed and it does not commit the session.
+
+        If this post is the last post of the topic, the topic's last post goes
+        back to the previous post (or to the first post). If it is also the
+        last post of the forum, the newest other visible post in the forum
+        becomes the forum's last post, or the last post info is cleared when
+        there is none.
+        """
         if self.topic.last_post == self:
             # update the last post in the forum
             if self.topic.last_post == self.topic.forum.last_post:
@@ -666,6 +676,15 @@ class Topic(HideableCRUDMixin, db.Model):
 
     @classmethod
     def get_topic(cls, topic_id: int, hiddencheck: bool = False):
+        """Returns the topic with the given id or aborts with a 404.
+
+        :param topic_id: The id of the topic.
+        :param hiddencheck: If ``True``, a hidden topic is only returned when
+                            the current user is allowed to see hidden content.
+                            For everybody else it also ends in a 404.
+                            With ``False`` (default) hidden topics are
+                            returned as well.
+        """
         stmt = select(cls).where(Topic.id == topic_id)
         if hiddencheck:
             stmt = hidden(stmt)
@@ -677,6 +696,18 @@ class Topic(HideableCRUDMixin, db.Model):
 
     @classmethod
     def get_posts(cls, topic_id: int, page: int | None):
+        """Returns a page of the posts of a topic, ordered from the oldest
+        to the newest post.
+
+        The items of the returned ``Pagination`` are ``(Post, User)`` rows and
+        not only posts. ``User`` can be ``None`` if the author was deleted,
+        because of the outer join. Hidden posts are left out unless the
+        current user can see hidden content. The page size comes from the
+        ``POSTS_PER_PAGE`` setting.
+
+        :param topic_id: The id of the topic.
+        :param page: The page number.
+        """
         from ..user.models import User
 
         stmt = (
