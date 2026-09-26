@@ -1292,10 +1292,9 @@ class Forum(db.Model, CRUDMixin):
 
     @override
     def save(self, groups: "Group | None" = None):
-        """Saves a forum
+        """Saves a forum. If no groups are given, all groups get access
+        to the new forum.
 
-        :param moderators: If given, it will update the moderators in this
-                           forum with the given iterable of user objects.
         :param groups: A list with group objects.
         """
         if self.id:
