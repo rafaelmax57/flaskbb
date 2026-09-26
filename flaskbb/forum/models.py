@@ -420,11 +420,7 @@ class Post(HideableCRUDMixin, db.Model):
                     self.topic.forum.last_post_username = second_last_post.username  # noqa
                     self.topic.forum.last_post_created = second_last_post.date_created  # noqa
                 else:
-                    self.topic.forum.last_post = None
-                    self.topic.forum.last_post_title = None
-                    self.topic.forum.last_post_user = None
-                    self.topic.forum.last_post_username = None
-                    self.topic.forum.last_post_created = None
+                    self.topic.forum.clear_last_post()
 
             # check if there is a second last post in this topic
             if self.topic.second_last_post is not None:
@@ -961,11 +957,7 @@ class Topic(HideableCRUDMixin, db.Model):
                 self.forum.last_post_username = topics[1].username
                 self.forum.last_post_created = topics[1].last_updated
         else:
-            self.forum.last_post = None
-            self.forum.last_post_title = None
-            self.forum.last_post_user = None
-            self.forum.last_post_username = None
-            self.forum.last_post_created = None
+            self.forum.clear_last_post()
 
     def _fix_user_post_counts(self, users: list["User"] | None = None):
         from flaskbb.user.models import User
@@ -1148,6 +1140,14 @@ class Forum(db.Model, CRUDMixin):
         """
         return "<{} {}>".format(self.__class__.__name__, self.id)
 
+    def clear_last_post(self):
+        """Removes the last post info from the forum."""
+        self.last_post = None
+        self.last_post_title = None
+        self.last_post_user = None
+        self.last_post_username = None
+        self.last_post_created = None
+
     def update_last_post(self, commit: bool = True):
         """Updates the last post in the forum."""
         last_post = db.session.execute(
@@ -1170,11 +1170,7 @@ class Forum(db.Model, CRUDMixin):
 
         # No post found..
         else:
-            self.last_post = None
-            self.last_post_title = None
-            self.last_post_user = None
-            self.last_post_username = None
-            self.last_post_created = None
+            self.clear_last_post()
 
         if commit:
             db.session.commit()
